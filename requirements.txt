@@ -1,0 +1,13 @@
+finrl
+torch
+numpy
+pandas
+matplotlib
+seaborn
+stable-baselines3
+gymnasium
+yfinance
+jupyter
+
+# To Do
+# faire pip freeze > requirements.txt, apres setup de l'env, pour verifier que tout tourne

@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from environment.yahoodownloader import YahooDownloader
 from environment.preprocessors import FeatureEngineer
-from  environment.portfolio_env import StockPortfolioEnv 
+from environment.portfolio_env import StockPortfolioEnv
 from config import (
     STOCKS, TRAIN_START, TEST_START, TEST_END,
     INITIAL_CAPITAL, TRANSACTION_COST, INDICATORS
@@ -126,6 +126,9 @@ def make_env(df):
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
 def build_envs():
+    # FinRL saves plots to results/ at episode end, create silently
+    os.makedirs("results", exist_ok=True)
+
     print("1. Downloading data")
     df = get_data()
 

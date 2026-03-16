@@ -14,9 +14,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
-from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
-from finrl.meta.preprocessor.preprocessors import FeatureEngineer
-from finrl.meta.env_portfolio_allocation.env_portfolio import StockPortfolioEnv
+from environment.yahoodownloader import YahooDownloader
+from environment.preprocessors import FeatureEngineer
+from environment.portfolio_env import StockPortfolioEnv
 from config import (
     STOCKS, TRAIN_START, TEST_START, TEST_END,
     INITIAL_CAPITAL, TRANSACTION_COST, INDICATORS
@@ -101,7 +101,7 @@ def split_data(df):
 # Note : hmax, transaction_cost_pct and reward_scaling are required by __init__
 #        but are not used internally by this environment version.
 
-def make_env(df):
+def make_env(df, reward_type="portfolio_value"):
     stock_dim = len(STOCKS)
 
     # StockPortfolioEnv expects rows indexed by day number (not row number)
@@ -119,13 +119,14 @@ def make_env(df):
         action_space=stock_dim,       # one weight per stock
         tech_indicator_list=INDICATORS,
         turbulence_threshold=None,    # no forced sell-off
+        reward_type=reward_type,
     )
     return env
 
 
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
-def build_envs():
+def build_envs(reward_type="portfolio_value"):
     # FinRL saves plots to results/ at episode end, create silently
     os.makedirs("results", exist_ok=True)
 
@@ -142,8 +143,8 @@ def build_envs():
     train_df, test_df = split_data(df)
 
     print("5. Creating environments")
-    train_env = make_env(train_df)
-    test_env  = make_env(test_df)
+    train_env = make_env(train_df, reward_type=reward_type)
+    test_env  = make_env(test_df, reward_type=reward_type)
 
     print("Done")
     return train_env, test_env, train_df, test_df

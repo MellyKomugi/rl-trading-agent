@@ -324,13 +324,13 @@ if __name__ == "__main__":
 """
 
 
-train_env, test_env, _, _ = build_envs()
+# train_env, test_env, _, _ = build_envs()
 
-agent = ReinforceAgent(obs_dim=21, action_dim=3)
-agent.train(train_env, n_episodes=200)
+# agent = ReinforceAgent(obs_dim=21, action_dim=3)
+# agent.train(train_env, n_episodes=200)
 
-reward, actions = agent.evaluate(test_env)
+# reward, actions = agent.evaluate(test_env)
 
-actions = np.array(actions)  # shape: (n_steps, 3)
-print(f"Mean weights: AAPL={actions[:,0].mean():.3f}, JPM={actions[:,1].mean():.3f}, XOM={actions[:,2].mean():.3f}")
-print(f"Std  weights: AAPL={actions[:,0].std():.3f},  JPM={actions[:,1].std():.3f},  XOM={actions[:,2].std():.3f}")
+# actions = np.array(actions)  # shape: (n_steps, 3)
+# print(f"Mean weights: AAPL={actions[:,0].mean():.3f}, JPM={actions[:,1].mean():.3f}, XOM={actions[:,2].mean():.3f}")
+# print(f"Std  weights: AAPL={actions[:,0].std():.3f},  JPM={actions[:,1].std():.3f},  XOM={actions[:,2].std():.3f}")

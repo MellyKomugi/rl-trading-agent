@@ -86,6 +86,37 @@ def _run_policy_gradient(train_env, test_env, device="cpu", episodes=50):
     )
 
 
+def _run_ppo(train_env, test_env, device="cpu", episodes=50):
+    agent = DRLAgent(env=train_env)
+    ppo_model = agent.get_model(
+        "ppo",
+        policy=SimplePortfolioMLP,
+        device=device,
+        model_kwargs={
+            "batch_size": 64,
+            "lr": 1e-3,
+            "action_noise": 0.01,
+            "gamma": 0.99,
+            "clip_epsilon": 0.2,
+            "update_epochs": 5,
+            "dirichlet_scale": 50.0,
+        },
+        policy_kwargs={
+            "input_shape": (7, 3),
+            "portfolio_size": train_env.stock_dim,
+            "hidden_dim": 64,
+            "device": device,
+        },
+    )
+    trained_ppo = agent.train_model(ppo_model, episodes=episodes)
+    return DRLAgent.DRL_prediction(
+        model=trained_ppo,
+        environment=test_env,
+        online_training_period=10**9,
+        lr=0,
+    )
+
+
 def _run_exp3(train_env, test_env, train_episodes=5):
     exp3_cls = _load_optional_class("agents.exp3", "Exp3Agent")
     if exp3_cls is None:
@@ -138,21 +169,23 @@ def _run_reinforce(train_env, test_env, train_episodes=50):
         print("[skip] ReinforceAgent: unsupported train signature")
         return None
 
-    test_attempts = (
+    eval_attempts = (
+        lambda: agent.evaluate(test_env),
+        lambda: agent.evaluate(env=test_env),
         lambda: agent.test(test_env),
         lambda: agent.test(env=test_env),
     )
     tested = False
-    for test_call in test_attempts:
+    for eval_call in eval_attempts:
         try:
-            test_call()
+            eval_call()
             tested = True
             break
-        except TypeError:
+        except (AttributeError, TypeError):
             continue
 
     if not tested:
-        print("[skip] ReinforceAgent: unsupported test signature")
+        print("[skip] ReinforceAgent: unsupported evaluation signature")
         return None
 
     return DRLAgent._build_output_frames(test_env)
@@ -165,13 +198,14 @@ def run_comparison(
     if_using_policy_gradient: bool = True,
     if_using_ppo: bool = False,
     reward_type: str = "portfolio_value",
+    ppo_train_episodes: int = 10,
     policy_gradient_episodes: int = 10,
     exp3_train_episodes: int = 10,
     reinforce_train_episodes: int = 10,
     print_test_results: bool = True,
     output_dir: str | None = None,
 ):
-    del if_using_dqn, if_using_ppo
+    del if_using_dqn
 
     train_env, test_env, train_df, test_df = build_envs(reward_type=reward_type)
     print(type(train_env))
@@ -196,6 +230,15 @@ def run_comparison(
         )
         results_by_model["policy_gradient"] = results_pg
         actions_by_model["policy_gradient"] = actions_pg
+
+    if if_using_ppo:
+        print("[run] PPO")
+        print(f"[train] PPO episodes={ppo_train_episodes}")
+        results_ppo, actions_ppo = _run_ppo(
+            train_env, test_env, episodes=ppo_train_episodes
+        )
+        results_by_model["ppo"] = results_ppo
+        actions_by_model["ppo"] = actions_ppo
 
     if if_using_exp3:
         print("[run] Exp3")

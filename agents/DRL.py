@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import pandas as pd
-# from agents.algorithms import PPO
 from agents.algorithms import PolicyGradient
 from agents.architectures import SimplePortfolioMLP
+from agents.ppo import PPO
 # from stable_baselines3.common.vec_env import VecEnv
 
-# MODELS = {"ppo": PPO , "pg": PolicyGradient}
-MODELS = {"pg": PolicyGradient}
+MODELS = {"ppo": PPO, "pg": PolicyGradient}
 architecture={"MlpPolicy" : SimplePortfolioMLP}
 
 class DRLAgent:

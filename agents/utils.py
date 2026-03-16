@@ -22,9 +22,10 @@ class PVM:
         self.reset()
 
     def reset(self):
-        self.memory = [np.array([1] + [0] * self.portfolio_size, dtype=np.float32)] * (
-            self.capacity + 1
+        initial_action = np.full(
+            self.portfolio_size, 1 / self.portfolio_size, dtype=np.float32
         )
+        self.memory = [initial_action.copy() for _ in range(self.capacity + 1)]
         self.index = 0  # initial index to retrieve data
 
     def retrieve(self):
@@ -33,7 +34,14 @@ class PVM:
         return last_action
 
     def add(self, action):
-        self.memory[self.index] = action
+        action = np.asarray(action, dtype=np.float32).reshape(-1)
+        if action.shape[0] == self.portfolio_size + 1:
+            action = action[1:]
+        if action.shape[0] != self.portfolio_size:
+            raise ValueError(
+                f"Expected action of size {self.portfolio_size}, got {action.shape[0]}."
+            )
+        self.memory[self.index] = action.copy()
 
 
 class ReplayBuffer:

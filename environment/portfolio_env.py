@@ -153,7 +153,11 @@ class StockPortfolioEnv(gym.Env):
                 print("Sharpe: ", sharpe)
             print("=================================")
 
-            return self.state, self.reward, self.terminal, False, {}
+            info = {
+                "price_variation": np.ones(self.stock_dim, dtype=np.float32),
+                "trf_mu": 1.0,
+            }
+            return self.state, self.reward, self.terminal, False, info
 
         else:
             # print("Model actions: ",actions)
@@ -184,6 +188,9 @@ class StockPortfolioEnv(gym.Env):
             portfolio_return = sum(
                 ((self.data.close.values / last_day_memory.close.values) - 1) * weights
             )
+            price_variation = (
+                self.data.close.values / last_day_memory.close.values
+            ).astype(np.float32)
             # update portfolio value
             new_portfolio_value = self.portfolio_value * (1 + portfolio_return)
             self.portfolio_value = new_portfolio_value
@@ -197,8 +204,15 @@ class StockPortfolioEnv(gym.Env):
             self.reward = new_portfolio_value
             # print("Step reward: ", self.reward)
             # self.reward = self.reward*self.reward_scaling
+            previous_weights = np.asarray(self.actions_memory[-2], dtype=np.float32)
+            turnover = np.sum(np.abs(weights - previous_weights))
+            trf_mu = max(1.0 - self.transaction_cost_pct * turnover, 1e-8)
+            info = {
+                "price_variation": price_variation,
+                "trf_mu": float(trf_mu),
+            }
 
-        return self.state, self.reward, self.terminal, False, {}
+        return self.state, self.reward, self.terminal, False, info
 
     def reset(
         self,

@@ -91,6 +91,23 @@ class PolicyGradient:
             "Environment must define `portfolio_size`, `stock_dim`, or an action space shape."
         )
 
+    @staticmethod
+    def _extract_obs(reset_output):
+        """Handle both Gym and Gymnasium reset signatures."""
+        if isinstance(reset_output, tuple):
+            return reset_output[0]
+        return reset_output
+
+    @staticmethod
+    def _unpack_step_output(step_output):
+        """Handle both Gym and Gymnasium step signatures."""
+        if len(step_output) == 5:
+            next_obs, reward, terminated, truncated, info = step_output
+            done = terminated or truncated
+            return next_obs, reward, done, info
+        next_obs, reward, done, info = step_output
+        return next_obs, reward, done, info
+
     def _setup_train(self, env, policy, batch_size, lr, optimizer):
         """Initializes algorithm before training.
 
@@ -131,7 +148,7 @@ class PolicyGradient:
         pbar = tqdm(range(1, episodes + 1), desc="Training PG")
         last_loss = None
         for episode in pbar:
-            obs = self.train_env.reset()  # observation
+            obs = self._extract_obs(self.train_env.reset())  # observation
             self.train_pvm.reset()  # reset portfolio vector memory
             done = False
             episode_reward = 0.0
@@ -149,7 +166,9 @@ class PolicyGradient:
                 self.train_pvm.add(action)
 
                 # run simulation step
-                next_obs, reward, done, info = self.train_env.step(action)
+                next_obs, reward, done, info = self._unpack_step_output(
+                    self.train_env.step(action)
+                )
                 episode_reward += float(reward)
                 step_count += 1
                 if getattr(self.train_env, "asset_memory", None):
@@ -237,7 +256,7 @@ class PolicyGradient:
         """
         self._setup_test(env, policy, online_training_period, lr, optimizer)
 
-        obs = self.test_env.reset()  # observation
+        obs = self._extract_obs(self.test_env.reset())  # observation
         self.test_pvm.reset()  # reset portfolio vector memory
         done = False
         steps = 0
@@ -252,7 +271,9 @@ class PolicyGradient:
             self.test_pvm.add(action)
 
             # run simulation step
-            next_obs, reward, done, info = self.test_env.step(action)
+            next_obs, reward, done, info = self._unpack_step_output(
+                self.test_env.step(action)
+            )
 
             # add experience to replay buffer
             exp = (obs, last_action, info["price_variation"], info["trf_mu"])

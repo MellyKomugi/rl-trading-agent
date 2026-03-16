@@ -9,8 +9,8 @@ from sklearn.base import TransformerMixin
 from sklearn.preprocessing import MaxAbsScaler
 from stockstats import StockDataFrame as Sdf
 
-from finrl import config
-from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
+import config
+from environment.yahoodownloader import YahooDownloader
 
 
 def load_dataset(*, file_name: str) -> pd.DataFrame:

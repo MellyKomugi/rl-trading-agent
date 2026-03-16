@@ -33,7 +33,7 @@ class YahooDownloader:
         self.end_date = end_date
         self.ticker_list = ticker_list
 
-    def fetch_data(self, proxy=None, auto_adjust=False) -> pd.DataFrame:
+    def fetch_data(self, auto_adjust=False) -> pd.DataFrame:
         """Fetches data from Yahoo API
         Parameters
         ----------
@@ -52,7 +52,6 @@ class YahooDownloader:
                 tic,
                 start=self.start_date,
                 end=self.end_date,
-                proxy=proxy,
                 auto_adjust=auto_adjust,
             )
             if temp_df.columns.nlevels != 1:

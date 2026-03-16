@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from gymnasium import spaces
 from gymnasium.utils import seeding
-from stable_baselines3.common.vec_env import DummyVecEnv
+# from stable_baselines3.common.vec_env import DummyVecEnv
 
 matplotlib.use("Agg")
 
@@ -261,7 +261,7 @@ class StockPortfolioEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def get_sb_env(self):
-        e = DummyVecEnv([lambda: self])
-        obs = e.reset()
-        return e, obs
+    # def get_sb_env(self):
+    #     e = DummyVecEnv([lambda: self])
+    #     obs = e.reset()
+    #     return e, obs

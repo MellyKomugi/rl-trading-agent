@@ -126,6 +126,9 @@ def make_env(df):
 # ── Main pipeline ─────────────────────────────────────────────────────────────
 
 def build_envs():
+    # FinRL saves plots to results/ at episode end, create silently
+    os.makedirs("results", exist_ok=True)
+
     print("1. Downloading data")
     df = get_data()
 

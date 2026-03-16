@@ -35,6 +35,10 @@ class DRLAgent:
     def _extract_raw_env(environment):
         if hasattr(environment, "get_sb_env"):
             return environment
+        if hasattr(environment, "asset_memory") and hasattr(
+            environment, "save_action_memory"
+        ):
+            return environment
         if hasattr(environment, "envs") and environment.envs:
             return environment.envs[0]
         raise ValueError("Unable to resolve the raw portfolio environment.")

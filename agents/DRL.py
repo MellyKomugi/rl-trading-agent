@@ -1,4 +1,6 @@
 from __future__ import annotations
+from agents.ppo import PPO
+
 
 import pandas as pd
 # from agents.algorithms import PPO
@@ -7,7 +9,7 @@ from agents.architectures import SimplePortfolioMLP
 # from stable_baselines3.common.vec_env import VecEnv
 
 # MODELS = {"ppo": PPO , "pg": PolicyGradient}
-MODELS = {"pg": PolicyGradient}
+MODELS = {"pg": PolicyGradient, "ppo": PPO}
 architecture={"MlpPolicy" : SimplePortfolioMLP}
 
 class DRLAgent:
@@ -88,12 +90,13 @@ class DRLAgent:
             if policy_kwargs:
                 model_kwargs["policy_kwargs"] = policy_kwargs
             return model_cls(
-                policy=policy,
                 env=env,
+                policy=architecture.get(policy, policy),
                 verbose=verbose,
                 seed=seed,
                 **model_kwargs,
             )
+
         if model_name =="pg" : 
             if device is not None : 
                 model_kwargs['device']=device

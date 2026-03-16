@@ -14,9 +14,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
-from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
-from finrl.meta.preprocessor.preprocessors import FeatureEngineer
-from finrl.meta.env_portfolio_allocation.env_portfolio import StockPortfolioEnv
+from environment.yahoodownloader import YahooDownloader
+from environment.preprocessors import FeatureEngineer
+from  environment.portfolio_env import StockPortfolioEnv 
 from config import (
     STOCKS, TRAIN_START, TEST_START, TEST_END,
     INITIAL_CAPITAL, TRANSACTION_COST, INDICATORS

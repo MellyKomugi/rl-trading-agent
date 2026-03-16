@@ -54,6 +54,11 @@ def _save_model_outputs(model_name, reward_type, results_df, actions_df, output_
     return results_path, actions_path
 
 
+def _print_test_results(summary_df):
+    print("\n[test results]")
+    print(summary_df.to_string(index=False))
+
+
 def _run_policy_gradient(train_env, test_env, device="cpu", episodes=50):
     agent = DRLAgent(env=train_env)
     pg_model = agent.get_model(
@@ -160,6 +165,10 @@ def run_comparison(
     if_using_policy_gradient: bool = True,
     if_using_ppo: bool = False,
     reward_type: str = "portfolio_value",
+    policy_gradient_episodes: int = 10,
+    exp3_train_episodes: int = 10,
+    reinforce_train_episodes: int = 10,
+    print_test_results: bool = True,
     output_dir: str | None = None,
 ):
     del if_using_dqn, if_using_ppo
@@ -181,13 +190,19 @@ def run_comparison(
 
     if if_using_policy_gradient:
         print("[run] PolicyGradient")
-        results_pg, actions_pg = _run_policy_gradient(train_env, test_env)
+        print(f"[train] PolicyGradient episodes={policy_gradient_episodes}")
+        results_pg, actions_pg = _run_policy_gradient(
+            train_env, test_env, episodes=policy_gradient_episodes
+        )
         results_by_model["policy_gradient"] = results_pg
         actions_by_model["policy_gradient"] = actions_pg
 
     if if_using_exp3:
         print("[run] Exp3")
-        exp3_outputs = _run_exp3(train_env, test_env)
+        print(f"[train] Exp3 episodes={exp3_train_episodes}")
+        exp3_outputs = _run_exp3(
+            train_env, test_env, train_episodes=exp3_train_episodes
+        )
         if exp3_outputs is not None:
             results_exp3, actions_exp3 = exp3_outputs
             results_by_model["exp3"] = results_exp3
@@ -195,7 +210,10 @@ def run_comparison(
 
     if if_using_reinforce:
         print("[run] Reinforce")
-        reinforce_outputs = _run_reinforce(train_env, test_env)
+        print(f"[train] Reinforce episodes={reinforce_train_episodes}")
+        reinforce_outputs = _run_reinforce(
+            train_env, test_env, train_episodes=reinforce_train_episodes
+        )
         if reinforce_outputs is not None:
             results_reinforce, actions_reinforce = reinforce_outputs
             results_by_model["reinforce"] = results_reinforce
@@ -225,6 +243,8 @@ def run_comparison(
     summary_df.to_csv(summary_path, index=False)
     print(f"[saved] comparison timeseries -> {comparison_path}")
     print(f"[saved] comparison summary -> {summary_path}")
+    if print_test_results:
+        _print_test_results(summary_df)
 
     return {
         "reward_type": reward_type,

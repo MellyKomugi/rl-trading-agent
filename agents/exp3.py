@@ -1,4 +1,3 @@
-# %%
 """
 Exp3 Agent — Exponential-weight algorithm for Exploration and Exploitation
 ==========================================================================
@@ -259,10 +258,3 @@ class Exp3Agent:
             "total_return"     : total_return,
             "sharpe"           : sharpe,
         }
-
-
-
-
-
-
-

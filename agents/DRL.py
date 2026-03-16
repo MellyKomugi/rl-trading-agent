@@ -45,11 +45,13 @@ class DRLAgent:
 
     @staticmethod
     def _build_output_frames(raw_env):
+        reward_memory = getattr(raw_env, "reward_memory", raw_env.portfolio_return_memory)
         results_df = pd.DataFrame(
             {
                 "date": pd.to_datetime(raw_env.date_memory),
                 "portfolio_value": raw_env.asset_memory,
                 "daily_return": raw_env.portfolio_return_memory,
+                "reward": reward_memory,
             }
         )
 

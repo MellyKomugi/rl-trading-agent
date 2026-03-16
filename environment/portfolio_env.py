@@ -75,6 +75,7 @@ class StockPortfolioEnv(gym.Env):
         action_space,
         tech_indicator_list,
         turbulence_threshold=None,
+        reward_type="portfolio_value",
         lookback=252,
         day=0,
     ):
@@ -91,6 +92,7 @@ class StockPortfolioEnv(gym.Env):
         self.state_space = state_space
         self.action_space = action_space
         self.tech_indicator_list = tech_indicator_list
+        self.reward_type = reward_type
 
         # action_space normalization and shape is self.stock_dim
         self.action_space = spaces.Box(low=0, high=1, shape=(self.action_space,))
@@ -119,8 +121,21 @@ class StockPortfolioEnv(gym.Env):
         self.asset_memory = [self.initial_amount]
         # memorize portfolio return each step
         self.portfolio_return_memory = [0]
+        self.reward_memory = [self.initial_amount if reward_type == "portfolio_value" else 0]
         self.actions_memory = [[1 / self.stock_dim] * self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
+
+    def _compute_reward(self, portfolio_return, new_portfolio_value):
+        if self.reward_type == "portfolio_value":
+            return float(new_portfolio_value)
+        if self.reward_type == "portfolio_return":
+            return float(portfolio_return)
+        if self.reward_type == "log_return":
+            return float(np.log1p(portfolio_return))
+        raise ValueError(
+            "Unsupported reward_type. Expected one of: "
+            "'portfolio_value', 'portfolio_return', 'log_return'."
+        )
 
     def step(self, actions):
         # print(self.day)
@@ -201,7 +216,8 @@ class StockPortfolioEnv(gym.Env):
             self.asset_memory.append(new_portfolio_value)
 
             # the reward is the new portfolio value or end portfolo value
-            self.reward = new_portfolio_value
+            self.reward = self._compute_reward(portfolio_return, new_portfolio_value)
+            self.reward_memory.append(self.reward)
             # print("Step reward: ", self.reward)
             # self.reward = self.reward*self.reward_scaling
             previous_weights = np.asarray(self.actions_memory[-2], dtype=np.float32)
@@ -235,6 +251,9 @@ class StockPortfolioEnv(gym.Env):
         # self.trades = 0
         self.terminal = False
         self.portfolio_return_memory = [0]
+        self.reward_memory = [
+            self.initial_amount if self.reward_type == "portfolio_value" else 0
+        ]
         self.actions_memory = [[1 / self.stock_dim] * self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
         return self.state, {}

@@ -1,2 +1,0 @@
-model,reward_type,initial_portfolio_value,final_portfolio_value,total_return,sharpe,num_steps
-ppo,portfolio_return,100000.0,122778.56749258265,0.22778567492582646,0.5706920094772356,500
